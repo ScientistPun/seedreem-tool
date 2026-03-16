@@ -1,0 +1,30 @@
+{
+  "name": "seedream-tools",
+  "version": "1.0.5",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder"
+  },
+  "devDependencies": {
+    "electron": "^28.0.0",
+    "electron-builder": "^24.9.1"
+  },
+  "build": {
+    "appId": "com.seedream.tools",
+    "productName": "Seedream Tools",
+    "win": {
+      "icon": "logo.ico",
+      "target": "nsis"
+    },
+    "mac": {
+      "icon": "logo.icns",
+      "category": "public.app-category.graphics-design"
+    },
+    "nsis": {
+      "shortcutName": "Seedream Tools",
+      "uninstallDisplayName": "Seedream Tools"
+    }
+  }
+}
