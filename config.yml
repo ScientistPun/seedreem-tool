@@ -1,4 +1,4 @@
-api_key: 124222
+api_key: 
 dev_mode: true
 base_url: https://ark.cn-beijing.volces.com/api/v3/images/generations
 auto_save: true

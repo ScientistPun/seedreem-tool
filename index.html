@@ -5,236 +5,188 @@
   <title>Seedream Tools</title>
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <style>
-    *{box-sizing:border-box;font-family:system-ui,sans-serif;margin:0;padding:0}
-    body{background:#f7f9fa;padding:25px}
-    .layout{display:flex;gap:24px;max-width:1600px;margin:0 auto}
-    .left{width:65%}
-    .right{width:35%}
+    /* ======================
+       基础样式
+       ====================== */
+    * { box-sizing: border-box; font-family: system-ui, sans-serif; margin: 0; padding: 0 }
+    body { background: #f7f9fa; padding: 25px; padding-bottom: 60px }
 
-    .card{
-      background:#fff;border-radius:18px;padding:22px;margin-bottom:20px;
-      box-shadow:0 2px 8px rgba(0,0,0,0.04);position:relative
+    /* 布局 */
+    .layout { display: flex; gap: 24px; max-width: 1600px; margin: 0 auto }
+    .left { width: 65% }
+    .right { width: 35% }
+
+    /* ======================
+       组件样式
+       ====================== */
+
+    /* 卡片 */
+    .card {
+      background: #fff; border-radius: 18px; padding: 22px; margin-bottom: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04); position: relative
     }
-    .card-header{
-      display:flex;justify-content:space-between;align-items:center;margin-bottom:14px
+    .card-header {
+      display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px
     }
 
+    /* 小按钮 */
     .mini-btn {
-      background:transparent;
-      color:#007aff;
-      border:none;
-      font-size:13px;
-      cursor:pointer;
-      padding:4px 8px;
+      background: transparent; color: #007aff; border: none;
+      font-size: 13px; cursor: pointer; padding: 4px 8px;
     }
-    .mini-btn:disabled {
-      color:#999;
-      cursor:not-allowed;
+    .mini-btn:disabled { color: #999; cursor: not-allowed }
+
+    /* 更多菜单 */
+    .more-btn { font-size: 20px; cursor: pointer }
+    .more-menu {
+      position: absolute; top: 50px; right: 20px; background: #fff;
+      border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      z-index: 999; display: none
+    }
+    .more-menu div { padding: 10px 16px; cursor: pointer }
+
+    /* 表单 */
+    .form-line { margin-bottom: 16px }
+    .form-line label { margin-bottom: 8px; display: block; font-weight: 600 }
+    input, select, textarea {
+      width: 100%; padding: 12px; border: 1px solid #e4e7ed;
+      border-radius: 12px; font-size: 14px
     }
 
-    .more-btn{font-size:20px;cursor:pointer}
-    .more-menu{
-      position:absolute;top:50px;right:20px;background:#fff;border-radius:12px;
-      box-shadow:0 4px 12px rgba(0,0,0,0.1);z-index:999;display:none
+    /* 模型选择器 */
+    .model-selector { display: flex; gap: 12px; margin-bottom: 20px }
+    .model-btn {
+      flex: 1; padding: 14px; border: 1px solid #e4e7ed;
+      border-radius: 12px; text-align: center; cursor: pointer; font-size: 14px
     }
-    .more-menu div{padding:10px 16px;cursor:pointer}
+    .model-btn.active { background: #007aff; color: #fff }
 
-    .form-line{margin-bottom:16px}
-    .form-line label{margin-bottom:8px;display:block;font-weight:600}
-    input,select,textarea{
-      width:100%;padding:12px;border:1px solid #e4e7ed;border-radius:12px;font-size:14px
+    /* 主按钮 */
+    .btn {
+      width: 100%; padding: 14px; background: #007aff; color: #fff;
+      border: none; border-radius: 14px; font-size: 15px; font-weight: 600;
+      margin-top: 8px; cursor: pointer; display: flex;
+      align-items: center; justify-content: center; gap: 8px
     }
+    .btn:disabled { background: #999; cursor: not-allowed }
 
-    .model-selector{
-      display:flex;gap:12px;margin-bottom:20px
-    }
-    .model-btn{
-      flex:1;padding:14px;border:1px solid #e4e7ed;border-radius:12px;
-      text-align:center;cursor:pointer;font-size:14px
-    }
-    .model-btn.active{background:#007aff;color:#fff}
+    /* 加载动画 */
+    .loading-spin { display: inline-block; animation: spin 0.8s linear infinite }
+    @keyframes spin { 100% { transform: rotate(360deg) } }
 
-    .btn{
-      width:100%;padding:14px;background:#007aff;color:#fff;border:none;border-radius:14px;
-      font-size:15px;font-weight:600;margin-top:8px;cursor:pointer;display:flex;
-      align-items:center;justify-content:center;gap:8px
-    }
-    .btn:disabled{background:#999;cursor:not-allowed}
-    .loading-spin{display:inline-block;animation:spin 0.8s linear infinite}
-    @keyframes spin{100%{transform:rotate(360deg)}}
+    /* ======================
+       内容区域样式
+       ====================== */
 
-    .prompt-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:10px}
-    .prompt-card{
-      background:#f1f5ff;padding:12px;border-radius:12px;cursor:pointer;
-      display:flex;flex-direction:column;gap:4px;position:relative
+    /* 提示词库 */
+    .prompt-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 10px }
+    .prompt-card {
+      background: #f1f5ff; padding: 12px; border-radius: 12px; cursor: pointer;
+      display: flex; flex-direction: column; gap: 4px; position: relative
     }
-    .prompt-card .del-btn{
-      position:absolute;top:6px;right:6px;background:red;color:white;
-      border:none;border-radius:4px;padding:2px 6px;font-size:12px
+    .prompt-card .del-btn {
+      position: absolute; top: 6px; right: 6px; background: red; color: white;
+      border: none; border-radius: 4px; padding: 2px 6px; font-size: 12px
     }
 
-    .result-box{background:#f9f9f9;padding:16px;border-radius:12px;min-height:100px;white-space:pre-wrap}
-    
-    .image-grid{
-      display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));
-      gap:14px;margin-top:16px;
-    }
-    .image-item{
-      border-radius:14px;overflow:hidden;position:relative;cursor:pointer;
-    }
-    .image-item img{
-      width:100%;height:100%;object-fit:cover;display:block
-    }
-    .img-check{
-      position:absolute;top:10px;left:10px;z-index:2;width:18px;height:18px
-    }
+    /* 结果区域 */
+    .result-box { background: #f9f9f9; padding: 16px; border-radius: 12px; min-height: 100px; white-space: pre-wrap }
 
-    .modal{
-      position:fixed;top:0;left:0;width:100%;height:100%;
-      background:rgba(0,0,0,0.8);display:none;justify-content:center;align-items:center;
-      z-index:9999
+    /* 图片网格 */
+    .image-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 14px; margin-top: 16px
     }
-    .modal-content{
-      background:#fff;border-radius:16px;width:90%;max-width:800px;
-      max-height:85vh;overflow:hidden;display:flex;flex-direction:column
-    }
-    .modal-header{
-      padding:16px 20px;background:#f7f9fa;border-bottom:1px solid #e5e7eb;
-      font-weight:600;font-size:16px;display:flex;justify-content:space-between;align-items:center
-    }
-    .modal-body{
-      padding:20px;overflow-y:auto;flex:1
-    }
-    .modal-footer{
-      padding:12px 20px;border-top:1px solid #e5e7eb;display:flex;justify-content:flex-end;gap:12px
-    }
-    .modal-footer button{
-      padding:8px 16px;border-radius:8px;border:none;cursor:pointer
-    }
-    .btn-primary{background:#007aff;color:white}
-    .btn-default{background:#f2f2f2}
-    .btn-danger{background:#ff3b30;color:white}
+    .image-item { border-radius: 14px; overflow: hidden; position: relative; cursor: pointer }
+    .image-item img { width: 100%; height: 100%; object-fit: cover; display: block }
+    .img-check { position: absolute; top: 10px; left: 10px; z-index: 2; width: 18px; height: 18px }
 
-    #previewModal{background:rgba(0,0,0,0.9);z-index:99999;}
-    .preview-container{
-      position:relative;
-      max-width:90%;
-      max-height:90vh;
+    /* ======================
+       弹窗样式
+       ====================== */
+    .modal {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.8); display: none;
+      justify-content: center; align-items: center; z-index: 9999
     }
-    .preview-img{
-      max-width:100%;
-      max-height:90vh;
-      object-fit:contain;
-      display:block;
+    .modal-content {
+      background: #fff; border-radius: 16px; width: 90%; max-width: 800px;
+      max-height: 85vh; overflow: hidden; display: flex; flex-direction: column
     }
-    .preview-nav{
-      position:absolute;top:50%;transform:translateY(-50%);
-      background:rgba(255,255,255,0.2);color:white;border:none;
-      font-size:24px;padding:16px 20px;border-radius:50%;cursor:pointer
+    .modal-header {
+      padding: 16px 20px; background: #f7f9fa; border-bottom: 1px solid #e5e7eb;
+      font-weight: 600; font-size: 16px;
+      display: flex; justify-content: space-between; align-items: center
     }
-    #prevBtn{left:-80px}
-    #nextBtn{right:-80px}
+    .modal-body { padding: 20px; overflow-y: auto; flex: 1 }
+    .modal-footer {
+      padding: 12px 20px; border-top: 1px solid #e5e7eb;
+      display: flex; justify-content: flex-end; gap: 12px
+    }
+    .modal-footer button { padding: 8px 16px; border-radius: 8px; border: none; cursor: pointer }
 
-    .md-view {
-      line-height: 1.7;
-      color: #222;
-    }
-    .md-view h1 {
-      font-size: 22px;
-      margin: 16px 0 12px;
-      font-weight: 700;
-      border-bottom: 1px solid #eee;
-      padding-bottom: 8px;
-    }
-    .md-view h2 {
-      font-size: 19px;
-      margin: 14px 0 10px;
-      font-weight: 600;
-    }
-    .md-view h3 {
-      font-size: 17px;
-      margin: 12px 0 8px;
-      font-weight: 600;
-    }
-    .md-view p {
-      margin: 10px 0;
-    }
-    .md-view ul,
-    .md-view ol {
-      margin: 10px 0 10px 24px;
-    }
-    .md-view li {
-      margin: 4px 0;
-    }
-    .md-view code {
-      background: #f2f2f2;
-      padding: 2px 6px;
-      border-radius: 4px;
-      font-family: monospace;
-    }
-    .md-view pre {
-      background: #f7f7f7;
-      padding: 12px;
-      border-radius: 8px;
-      overflow-x: auto;
-      margin: 10px 0;
-    }
-    .md-view pre code {
-      background: transparent;
-      padding: 0;
-    }
-    .md-view blockquote {
-      border-left: 4px solid #007aff;
-      padding: 8px 12px;
-      background: #f7f9fa;
-      margin: 10px 0;
-      color: #555;
-    }
-    .md-view a {
-      color: #007aff;
-      text-decoration: none;
-    }
+    /* 按钮样式 */
+    .btn-primary { background: #007aff; color: white }
+    .btn-default { background: #f2f2f2 }
+    .btn-danger { background: #ff3b30; color: white }
 
-    /* 新增：版本信息栏样式 */
+    /* 日志弹窗可调整大小 */
+    #logModal .modal-content { resize: both; overflow: auto; min-width: 400px; min-height: 300px }
+    #logModal textarea { resize: none; height: calc(100% - 10px); min-height: 200px }
+    #logModal .modal-body { flex: 1; display: flex; flex-direction: column }
+
+    /* 图片预览 */
+    #previewModal { background: rgba(0,0,0,0.9); z-index: 99999 }
+    .preview-container { position: relative; max-width: 90%; max-height: 90vh }
+    .preview-img { max-width: 100%; max-height: 90vh; object-fit: contain; display: block }
+    .preview-nav {
+      position: absolute; top: 50%; transform: translateY(-50%);
+      background: rgba(255,255,255,0.2); color: white; border: none;
+      font-size: 24px; padding: 16px 20px; border-radius: 50%; cursor: pointer
+    }
+    #prevBtn { left: -80px }
+    #nextBtn { right: -80px }
+
+    /* ======================
+       Markdown 渲染样式
+       ====================== */
+    .md-view { line-height: 1.7; color: #222 }
+    .md-view h1 { font-size: 22px; margin: 16px 0 12px; font-weight: 700; border-bottom: 1px solid #eee; padding-bottom: 8px }
+    .md-view h2 { font-size: 19px; margin: 14px 0 10px; font-weight: 600 }
+    .md-view h3 { font-size: 17px; margin: 12px 0 8px; font-weight: 600 }
+    .md-view p { margin: 10px 0 }
+    .md-view ul, .md-view ol { margin: 10px 0 10px 24px }
+    .md-view li { margin: 4px 0 }
+    .md-view code { background: #f2f2f2; padding: 2px 6px; border-radius: 4px; font-family: monospace }
+    .md-view pre { background: #f7f7f7; padding: 12px; border-radius: 8px; overflow-x: auto; margin: 10px 0 }
+    .md-view pre code { background: transparent; padding: 0 }
+    .md-view blockquote { border-left: 4px solid #007aff; padding: 8px 12px; background: #f7f9fa; margin: 10px 0; color: #555 }
+    .md-view a { color: #007aff; text-decoration: none }
+
+    /* ======================
+       底部版本栏
+       ====================== */
     #version-footer {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      width: 100%;
-      background: #fff;
-      border-top: 1px solid #e4e7ed;
-      padding: 12px 25px;
-      font-size: 13px;
-      color: #666;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      box-shadow: 0 -2px 8px rgba(0,0,0,0.02);
-      z-index: 999;
+      position: fixed; bottom: 0; left: 0; width: 100%;
+      background: #fff; border-top: 1px solid #e4e7ed;
+      padding: 12px 25px; font-size: 13px; color: #666;
+      display: flex; justify-content: space-between; align-items: center;
+      box-shadow: 0 -2px 8px rgba(0,0,0,0.02); z-index: 999
     }
-    #version-footer .left-info {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-    }
-    #version-footer .version {
-      color: #007aff;
-      font-weight: 600;
-    }
-    #version-footer a {
-      color: #007aff;
-      text-decoration: none;
-    }
-    .version-footer a:hover {
-      text-decoration: underline;
-    }
+    #version-footer .left-info { display: flex; align-items: center; gap: 16px }
+    #version-footer .version { color: #007aff; font-weight: 600 }
+    #version-footer a { color: #007aff; text-decoration: none }
   </style>
 </head>
-
 <body>
 
+<!-- ======================
+     主布局
+     ====================== -->
 <div class="layout">
+  <!-- 左侧：提示词库、结果展示 -->
   <div class="left">
+    <!-- 提示词库 -->
     <div class="card">
       <div class="card-header">
         <h2>🏷️ 提示词库</h2>
@@ -243,11 +195,13 @@
       <div class="prompt-grid" id="promptGrid"></div>
     </div>
 
+    <!-- 响应结果 -->
     <div class="card">
       <h2>📄 响应结果</h2>
       <div class="result-box" id="resultText"></div>
     </div>
 
+    <!-- 生成结果 -->
     <div class="card">
       <div class="card-header">
         <h2>🖼️ 生成结果</h2>
@@ -257,6 +211,7 @@
     </div>
   </div>
 
+  <!-- 右侧：生成面板 -->
   <div class="right">
     <div class="card">
       <div class="card-header">
@@ -270,12 +225,14 @@
         </div>
       </div>
 
+      <!-- 模型选择 -->
       <div class="model-selector">
         <div class="model-btn" data-key="v4">V4</div>
         <div class="model-btn" data-key="v45">V45</div>
         <div class="model-btn active" data-key="v5">V5</div>
       </div>
 
+      <!-- 生成参数 -->
       <div class="form-line">
         <label>生成模式</label>
         <select id="mode">
@@ -298,12 +255,17 @@
 
       <div class="form-line">
         <label>参考图 URL</label>
-        <textarea id="imageUrls" rows="3"></textarea>
+        <textarea id="imageUrls" rows="3" placeholder="每行一个URL"></textarea>
+      </div>
+
+      <div class="form-line">
+        <label>最多生成数量（0则无限制）</label>
+        <input id="maxImages" type="number" min="0" max="10" placeholder="不限制">
       </div>
 
       <div class="form-line">
         <label>提示词</label>
-        <textarea id="prompt" rows="5"></textarea>
+        <textarea id="prompt" rows="5" placeholder="输入图像生成提示词..."></textarea>
       </div>
 
       <button class="btn" id="generateBtn">🚀 开始生成</button>
@@ -311,10 +273,14 @@
   </div>
 </div>
 
-<!-- 新增：底部版本信息栏 -->
-<div id="version-footer"> </div>
+<!-- 底部版本信息 -->
+<div id="version-footer"></div>
 
-<!-- 图片预览弹窗 -->
+<!-- ======================
+     弹窗
+     ====================== -->
+
+<!-- 图片预览 -->
 <div class="modal" id="previewModal">
   <div class="preview-container">
     <button id="prevBtn" class="preview-nav">←</button>
@@ -323,7 +289,7 @@
   </div>
 </div>
 
-<!-- 提示词弹窗 -->
+<!-- 添加提示词 -->
 <div class="modal" id="promptModal">
   <div class="modal-content">
     <div class="modal-header">添加提示词</div>
@@ -339,12 +305,12 @@
   </div>
 </div>
 
-<!-- 日志弹窗 -->
+<!-- 日志 -->
 <div class="modal" id="logModal">
   <div class="modal-content">
     <div class="modal-header">日志</div>
     <div class="modal-body">
-      <textarea style="width:100%;min-height:300px" id="logContent" readonly></textarea>
+      <textarea style="width:100%" id="logContent" readonly></textarea>
     </div>
     <div class="modal-footer">
       <button id="clearLogBtn" class="btn-danger">清空日志</button>
@@ -353,7 +319,7 @@
   </div>
 </div>
 
-<!-- 配置弹窗 -->
+<!-- 配置 -->
 <div class="modal" id="cfgModal">
   <div class="modal-content">
     <div class="modal-header">配置文件</div>
@@ -367,7 +333,7 @@
   </div>
 </div>
 
-<!-- 说明文档弹窗 -->
+<!-- 说明文档 -->
 <div class="modal" id="readmeModal">
   <div class="modal-content">
     <div class="modal-header">说明文档</div>
@@ -380,140 +346,167 @@
   </div>
 </div>
 
+<!-- ======================
+     脚本
+     ====================== -->
 <script>
-const { ipcRenderer } = require('electron')
-const seedream = require('./seedream.js')
-const fs = require('fs')
-const path = require('path')
+const seedream = window.electronAPI
 
-document.getElementById('version-footer').innerHTML = `<div class="left-info"> <span>Seedream Tools <span class="version">v${seedream.VERSION}</span></span>
-    <span>👨‍🔬 ${seedream.AUTHOR_INFO.name} ${seedream.AUTHOR_INFO.email} &copy; 2026 All Rights Reserved</span>
-  </div>
-  <div class="right-info">
-    <a href="${seedream.AUTHOR_INFO.repo}t" target="_blank">📦 GitHub</a>
-  </div>`
-
-let currentImageList = []
-let currentPreviewIndex = 0
-
-function renderMarkdown(text) {
-  if (!text) return ""
-  return marked.parse(text, { breaks: true, gfm: true })
-}
-
-function show(id){document.getElementById(id).style.display='flex'}
-function hide(id){document.getElementById(id).style.display='none'}
-
-// 监听复选框，控制保存按钮状态
-function updateSaveButtonStatus() {
-  const btn = document.getElementById('saveSelectedBtn')
-  const checked = document.querySelectorAll('.img-check:checked')
-  btn.disabled = checked.length === 0
+// 状态管理
+const state = {
+  imageList: [],      // 当前生成的图片列表
+  previewIndex: 0,    // 预览当前索引
 }
 
 // ======================
-// 生成图片
+// 工具函数
 // ======================
-const generateBtn = document.getElementById('generateBtn')
-const resultBox = document.getElementById('resultText')
-const imageContainer = document.getElementById('imageContainer')
 
-generateBtn.onclick = async () => {
-  if(generateBtn.disabled) return
-  generateBtn.disabled = true
-  generateBtn.innerHTML = '<span class="loading-spin">⏳</span> 生成中...'
-  resultBox.innerText = ''
-  imageContainer.innerHTML = ''
-  currentImageList = []
+/** 显示弹窗 */
+const show = (id) => document.getElementById(id).style.display = 'flex'
+/** 隐藏弹窗 */
+const hide = (id) => document.getElementById(id).style.display = 'none'
+
+/** 渲染 Markdown */
+const renderMarkdown = (text) => text ? marked.parse(text, { breaks: true, gfm: true }) : ''
+
+/** 更新时间戳前缀 */
+const getImgPrefix = () => {
+  const now = new Date()
+  const pad = (n) => n.toString().padStart(2, '0')
+  const year = now.getFullYear().toString().slice(2)
+  return `seedream_${year}${pad(now.getMonth()+1)}${pad(now.getDate())}${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}_`
+}
+
+// ======================
+// 初始化
+// ======================
+
+window.addEventListener('DOMContentLoaded', async () => {
+  // 加载配置
+  await seedream.loadConfig()
+
+  // 设置版本信息
+  const appInfo = await seedream.getAppInfo()
+  document.getElementById('version-footer').innerHTML = `
+    <div class="left-info">
+      <span>Seedream Tools <span class="version">v${appInfo.version}</span></span>
+      <span>👨‍🔬 ${appInfo.author.name} ${appInfo.author.email} &copy; 2026</span>
+    </div>
+    <div class="right-info">
+      <a href="${appInfo.repository.url}" target="_blank">📦 GitHub</a>
+    </div>`
+})
+
+// ======================
+// 图片生成
+// ======================
+
+document.getElementById('generateBtn').onclick = async () => {
+  const btn = document.getElementById('generateBtn')
+  if (btn.disabled) return
+
+  // 设置加载状态
+  btn.disabled = true
+  btn.innerHTML = '<span class="loading-spin">⏳</span> 生成中...'
+  document.getElementById('resultText').innerText = ''
+  document.getElementById('imageContainer').innerHTML = ''
   document.getElementById('saveSelectedBtn').disabled = true
+  state.imageList = []
 
   try {
+    // 收集参数
+    const maxImages = document.getElementById('maxImages').value.trim()
     const res = await seedream.generateImage({
       modelKey: document.querySelector('.model-btn.active').dataset.key,
       mode: document.getElementById('mode').value,
       prompt: document.getElementById('prompt').value,
       size: document.getElementById('size').value,
       strength: parseFloat(document.getElementById('strength').value),
-      imageUrls: document.getElementById('imageUrls').value.trim().split('\n').filter(i=>i),
-      autoSave: false
+      imageUrls: document.getElementById('imageUrls').value.trim().split('\n').filter(Boolean),
+      maxImages: maxImages ? parseInt(maxImages) : null
     })
 
     if (!res.success) throw new Error(res.error)
-    currentImageList = res.base64List
-    resultBox.innerText = `✅ 成功生成 ${res.base64List.length} 张图片`
 
+    // 更新结果
+    state.imageList = res.base64List
+    document.getElementById('resultText').innerText = `✅ 成功生成 ${res.base64List.length} 张图片`
+
+    // 渲染图片网格
     res.base64List.forEach((b64, idx) => {
       const item = document.createElement('div')
       item.className = 'image-item'
       item.innerHTML = `
-        <input type="checkbox" class="img-check" data-idx="${idx}" onchange="updateSaveButtonStatus()">
+        <input type="checkbox" class="img-check" data-idx="${idx}" onchange="updateSaveBtn()">
         <img src="data:image/png;base64,${b64}" data-idx="${idx}">
       `
       item.querySelector('img').onclick = () => openPreview(idx)
-      imageContainer.appendChild(item)
+      document.getElementById('imageContainer').appendChild(item)
     })
 
-    generateBtn.innerHTML = '✅ 生成成功'
+    btn.innerHTML = '✅ 生成成功'
   } catch (e) {
-    resultBox.innerText = '❌ 错误：' + e.message
+    document.getElementById('resultText').innerText = '❌ 错误：' + e.message
   }
-  generateBtn.disabled = false
-  generateBtn.innerHTML = '🚀 开始生成'
+
+  // 恢复按钮状态
+  setTimeout(() => {
+    btn.disabled = false
+    btn.innerHTML = '🚀 开始生成'
+  }, 1500)
+}
+
+/** 更新保存按钮状态 */
+function updateSaveBtn() {
+  document.getElementById('saveSelectedBtn').disabled =
+    document.querySelectorAll('.img-check:checked').length === 0
 }
 
 // ======================
-// 图片预览（已修复遮罩点击）
+// 图片预览
 // ======================
-function openPreview(idx){
-  currentPreviewIndex = idx
-  document.getElementById('previewImg').src = `data:image/png;base64,${currentImageList[idx]}`
+
+/** 打开预览 */
+const openPreview = (idx) => {
+  state.previewIndex = idx
+  document.getElementById('previewImg').src = `data:image/png;base64,${state.imageList[idx]}`
   show('previewModal')
 }
 
-// ✅ 关闭预览（点击遮罩 + 按钮 + ESC 全部生效）
-document.getElementById('previewModal').addEventListener('click', (e) => {
-  if (e.target === document.getElementById('previewModal')) {
-    hide('previewModal')
-  }
-})
-document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape') hide('previewModal')
-})
-
-// 上下张
-document.getElementById('prevBtn').onclick = ()=>{
-  currentPreviewIndex = (currentPreviewIndex - 1 + currentImageList.length) % currentImageList.length
-  document.getElementById('previewImg').src = `data:image/png;base64,${currentImageList[currentPreviewIndex]}`
-}
-document.getElementById('nextBtn').onclick = ()=>{
-  currentPreviewIndex = (currentPreviewIndex + 1) % currentImageList.length
-  document.getElementById('previewImg').src = `data:image/png;base64,${currentImageList[currentPreviewIndex]}`
+/** 切换图片 */
+const changePreview = (delta) => {
+  state.previewIndex = (state.previewIndex + delta + state.imageList.length) % state.imageList.length
+  document.getElementById('previewImg').src = `data:image/png;base64,${state.imageList[state.previewIndex]}`
 }
 
+// 预览事件绑定
+document.getElementById('previewModal').onclick = (e) => { if (e.target.id === 'previewModal') hide('previewModal') }
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') hide('previewModal') })
+document.getElementById('prevBtn').onclick = () => changePreview(-1)
+document.getElementById('nextBtn').onclick = () => changePreview(1)
+
 // ======================
-// 保存选中图片
+// 保存图片
 // ======================
+
 document.getElementById('saveSelectedBtn').onclick = async () => {
   try {
-    const result = await ipcRenderer.invoke('open-directory')
-    if (result.canceled || !result.filePaths) return
+    const result = await seedream.openDirectory()
+    if (result.canceled || !result.filePaths?.length) return
 
     const dir = result.filePaths[0]
     const checks = document.querySelectorAll('.img-check:checked')
     let count = 0
+    const prefix = getImgPrefix()
 
-    const imgPrefix = seedream.getSaveImgPrefix()
+    for (const c of checks) {
+      const idx = c.dataset.idx
+      const filePath = `${dir}/${prefix}${idx}.png`
+      await seedream.saveImage(filePath, state.imageList[idx])
+      count++
+    }
 
-    checks.forEach(c => {
-      try {
-        const idx = c.dataset.idx
-        const b64 = currentImageList[idx]
-        const buffer = Buffer.from(b64, 'base64')
-        const file = path.join(dir, `${imgPrefix}${idx}.png`)
-        fs.writeFileSync(file, buffer)
-        count++
-      } catch (e) {}
-    })
     alert(`✅ 保存成功！共 ${count} 张\n路径：${dir}`)
   } catch (err) {
     alert('❌ 保存失败：' + err.message)
@@ -523,88 +516,105 @@ document.getElementById('saveSelectedBtn').onclick = async () => {
 // ======================
 // 提示词库
 // ======================
-function renderPromptList() {
-  const g = document.getElementById('promptGrid')
-  g.innerHTML = ''
-  const list = JSON.parse(localStorage.getItem('prompts')||'[]')
-  list.forEach((it,i)=>{
-    const d = document.createElement('div')
-    d.className = 'prompt-card'
-    d.innerHTML = `
-      <div>${it.title}</div>
-      <div style="font-size:12px;color:#666">${it.desc}</div>
-      <button class="del-btn" data-i="${i}">删除</button>
+
+/** 渲染提示词列表 */
+const renderPrompts = () => {
+  const container = document.getElementById('promptGrid')
+  container.innerHTML = ''
+  const list = JSON.parse(localStorage.getItem('prompts') || '[]')
+
+  list.forEach((item, idx) => {
+    const card = document.createElement('div')
+    card.className = 'prompt-card'
+    card.innerHTML = `
+      <div>${item.title}</div>
+      <div style="font-size:12px;color:#666">${item.desc}</div>
+      <button class="del-btn" data-i="${idx}">删除</button>
     `
-    d.onclick = ()=>{ document.getElementById('prompt').value = it.content }
-    g.appendChild(d)
+    card.onclick = () => document.getElementById('prompt').value = item.content
+    container.appendChild(card)
   })
-  document.querySelectorAll('.del-btn').forEach(b=>{
-    b.onclick = (e)=>{
+
+  // 绑定删除事件
+  document.querySelectorAll('.del-btn').forEach(btn => {
+    btn.onclick = (e) => {
       e.stopPropagation()
-      const list = JSON.parse(localStorage.getItem('prompts')||'[]')
-      list.splice(b.dataset.i,1)
-      localStorage.setItem('prompts',JSON.stringify(list))
-      renderPromptList()
+      const list = JSON.parse(localStorage.getItem('prompts') || '[]')
+      list.splice(btn.dataset.i, 1)
+      localStorage.setItem('prompts', JSON.stringify(list))
+      renderPrompts()
     }
   })
 }
 
-document.getElementById('addPromptBtn').onclick = ()=>show('promptModal')
-document.getElementById('cancelModalBtn').onclick = ()=>hide('promptModal')
+// 提示词弹窗事件
+document.getElementById('addPromptBtn').onclick = () => show('promptModal')
+document.getElementById('cancelModalBtn').onclick = () => hide('promptModal')
 document.getElementById('savePromptModalBtn').onclick = () => {
-  const t = document.getElementById('modalTitle').value.trim()
-  const d = document.getElementById('modalDesc').value.trim()
-  const c = document.getElementById('modalContent').value.trim()
-  if(!t||!c)return
-  const list = JSON.parse(localStorage.getItem('prompts')||'[]')
-  list.push({title:t,desc:d,content:c})
-  localStorage.setItem('prompts',JSON.stringify(list))
+  const title = document.getElementById('modalTitle').value.trim()
+  const desc = document.getElementById('modalDesc').value.trim()
+  const content = document.getElementById('modalContent').value.trim()
+  if (!title || !content) return
+
+  const list = JSON.parse(localStorage.getItem('prompts') || '[]')
+  list.push({ title, desc, content })
+  localStorage.setItem('prompts', JSON.stringify(list))
   hide('promptModal')
-  renderPromptList()
+  renderPrompts()
 }
 
 // ======================
 // 菜单功能
 // ======================
-document.getElementById('moreBtn').onclick = (e)=>{e.stopPropagation();moreMenu.style.display=moreMenu.style.display=='block'?'none':'block'}
-document.onclick = ()=>{moreMenu.style.display='none'}
-document.getElementById('exitApp').onclick = ()=>ipcRenderer.send('appExit')
 
-document.getElementById('openLog').onclick = async ()=>{
-  document.getElementById('logContent').value = seedream.getLogs()
+const moreMenu = document.getElementById('moreMenu')
+document.getElementById('moreBtn').onclick = (e) => {
+  e.stopPropagation()
+  moreMenu.style.display = moreMenu.style.display === 'block' ? 'none' : 'block'
+}
+document.onclick = () => moreMenu.style.display = 'none'
+document.getElementById('exitApp').onclick = () => seedream.send('appExit')
+
+// 日志
+document.getElementById('openLog').onclick = async () => {
+  document.getElementById('logContent').value = await seedream.getLogs()
   show('logModal')
 }
-document.getElementById('closeLogModal').onclick = ()=>hide('logModal')
-document.getElementById('clearLogBtn').onclick = async ()=>{
-  seedream.clearLogs()
+document.getElementById('closeLogModal').onclick = () => hide('logModal')
+document.getElementById('clearLogBtn').onclick = async () => {
+  await seedream.clearLogs()
   document.getElementById('logContent').value = ''
   hide('logModal')
 }
 
-document.getElementById('openConfig').onclick = async ()=>{
+// 配置
+document.getElementById('openConfig').onclick = async () => {
   document.getElementById('cfgContent').value = await seedream.getConfigYml()
   show('cfgModal')
 }
-document.getElementById('closeCfgModal').onclick = ()=>hide('cfgModal')
-document.getElementById('saveCfgBtn').onclick = ()=>{
-  seedream.saveConfigYml(document.getElementById('cfgContent').value)
+document.getElementById('closeCfgModal').onclick = () => hide('cfgModal')
+document.getElementById('saveCfgBtn').onclick = async () => {
+  await seedream.saveConfigYml(document.getElementById('cfgContent').value)
   hide('cfgModal')
 }
 
-document.getElementById('openReadme').onclick = async ()=>{
-  document.getElementById('mdRender').innerHTML = renderMarkdown(seedream.getReadme())
+// 说明文档
+document.getElementById('openReadme').onclick = async () => {
+  document.getElementById('mdRender').innerHTML = renderMarkdown(await seedream.getReadme())
   show('readmeModal')
 }
-document.getElementById('closeReadmeModal').onclick = ()=>hide('readmeModal')
+document.getElementById('closeReadmeModal').onclick = () => hide('readmeModal')
 
-document.querySelectorAll('.model-btn').forEach(b=>{
-  b.onclick = ()=>{
-    document.querySelectorAll('.model-btn').forEach(x=>x.classList.remove('active'))
-    b.classList.add('active')
+// 模型切换
+document.querySelectorAll('.model-btn').forEach(btn => {
+  btn.onclick = () => {
+    document.querySelectorAll('.model-btn').forEach(b => b.classList.remove('active'))
+    btn.classList.add('active')
   }
 })
 
-renderPromptList()
+// 初始化提示词列表
+renderPrompts()
 </script>
 </body>
 </html>
