@@ -140,8 +140,24 @@ ipcMain.handle('get-config-yml', () => {
 
 /** 保存配置 */
 ipcMain.handle('save-config-yml', (e, content) => {
-  fs.writeFileSync(getConfigPath(), content, 'utf8')
-  return { success: true }
+  try {
+    fs.writeFileSync(getConfigPath(), content, 'utf8')
+    dialog.showMessageBoxSync({
+      type: 'info',
+      title: pkgInfo.build.productName,
+      message: '✅ 配置保存成功',
+      buttons: ['确定']
+    })
+    return { success: true }
+  } catch (err) {
+    dialog.showMessageBoxSync({
+      type: 'error',
+      title: pkgInfo.build.productName,
+      message: `❌ 配置保存失败：${err.message}`,
+      buttons: ['确定']
+    })
+    return { error: err.message }
+  }
 })
 
 /** 获取说明文档 */
@@ -164,8 +180,24 @@ ipcMain.handle('write-log', (e, message) => {
 
 /** 清空日志 */
 ipcMain.handle('clear-logs', () => {
-  fs.writeFileSync(getLogPath(), '', 'utf8')
-  return { success: true }
+  try {
+    fs.writeFileSync(getLogPath(), '', 'utf8')
+    dialog.showMessageBoxSync({
+      type: 'info',
+      title: pkgInfo.build.productName,
+      message: '✅ 日志已清空',
+      buttons: ['确定']
+    })
+    return { success: true }
+  } catch (err) {
+    dialog.showMessageBoxSync({
+      type: 'error',
+      title: pkgInfo.build.productName,
+      message: `❌ 清空日志失败：${err.message}`,
+      buttons: ['确定']
+    })
+    return { error: err.message }
+  }
 })
 
 /** 保存图片到指定路径 */
@@ -176,8 +208,20 @@ ipcMain.handle('save-image', (e, { filePath, base64Data }) => {
       fs.mkdirSync(dir, { recursive: true })
     }
     fs.writeFileSync(filePath, Buffer.from(base64Data, 'base64'))
+    dialog.showMessageBoxSync({
+      type: 'info',
+      title: pkgInfo.build.productName,
+      message: '✅ 图片保存成功',
+      buttons: ['确定']
+    })
     return { success: true }
   } catch (err) {
+    dialog.showMessageBoxSync({
+      type: 'error',
+      title: pkgInfo.build.productName,
+      message: `❌ 图片保存失败：${err.message}`,
+      buttons: ['确定']
+    })
     return { error: err.message }
   }
 })
