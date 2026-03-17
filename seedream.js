@@ -1,3 +1,4 @@
+const {ipcRenderer} = require('electron') 
 const fs = require('fs')
 const path = require('path')
 const yaml = require('js-yaml')
@@ -12,50 +13,103 @@ const AUTHOR_INFO = {
   repo: packageInfo.repository.url
 };
 
-function loadConfig() {
-  const configPath = path.join(__dirname, 'config.yml')
-  return yaml.load(fs.readFileSync(configPath, 'utf8'))
+// 定义文件位置
+const CONFIG_FILE = 'config.yml'
+let CONFIG_PATH = ''
+const LOG_FILE = 'cache.log'
+let LOG_PATH = ''
+const README_PATH = path.join(__dirname, 'readme.md')
+
+async function loadConfig() {
+  const userPath = await ipcRenderer.invoke('get-path')
+  CONFIG_PATH = path.join(userPath, CONFIG_FILE)
+  LOG_PATH = path.join(userPath, LOG_FILE)
+  return yaml.load(fs.readFileSync(CONFIG_PATH, 'utf8'))
 }
 
-let cfg = loadConfig()
+let API_KEY = ''
+let DEV_MODE = ''
+let BASE_URL = ''
+let AUTO_SAVE = ''
+let SAVE_DIR = ''
+let MODELS = {}
+let DEFAULT = {}
 
-let API_KEY = cfg.api_key
-let DEV_MODE = cfg.dev_mode
-let BASE_URL = cfg.base_url
-let AUTO_SAVE = cfg.auto_save
-let SAVE_DIR = cfg.save_dir
-
-const MODELS = {
-  v5: cfg.models.v5,
-  v45: cfg.models.v45,
-  v4: cfg.models.v4
-}
-
-const DEFAULT = cfg.default
+loadConfig().then((cfg) => {
+  API_KEY = cfg.api_key
+  DEV_MODE = cfg.dev_mode
+  BASE_URL = cfg.base_url
+  AUTO_SAVE = cfg.auto_save
+  SAVE_DIR = cfg.save_dir
+  MODELS = {
+    v5: cfg.models.v5,
+    v45: cfg.models.v45,
+    v4: cfg.models.v4
+  }
+  DEFAULT = cfg.default
+})
 
 function reloadConfig() {
   try {
-    const newCfg = loadConfig()
-    cfg = newCfg
-    API_KEY = cfg.api_key
-    DEV_MODE = cfg.dev_mode
-    BASE_URL = cfg.base_url
-    AUTO_SAVE = cfg.auto_save
-    SAVE_DIR = cfg.save_dir
+    loadConfig().then((cfg) => {
+      API_KEY = cfg.api_key
+      DEV_MODE = cfg.dev_mode
+      BASE_URL = cfg.base_url
+      AUTO_SAVE = cfg.auto_save
+      SAVE_DIR = cfg.save_dir
+      MODELS = {
+        v5: cfg.models.v5,
+        v45: cfg.models.v45,
+        v4: cfg.models.v4
+      }
+      DEFAULT = cfg.default
+    })
   } catch (e) {}
 }
 
-function writeLog(message, forceWrite = false) {
-  try {
-    if (!DEV_MODE && !forceWrite) return
-    const logFile = require('path').join(process.cwd(), 'cache.log');
-    const now = new Date()
-    const timestamp = now.toISOString().replace('T', ' ').split('.')[0]
-    const logStr = `[${timestamp}] ${message}\n`
-    fs.appendFileSync(logFile, logStr, 'utf8')
-  } catch (e) {
-    if (DEV_MODE) console.log('无法写入:', e.message)
-  }
+async function getConfigYml() {
+  const defaultCfg = `
+api_key: ""
+dev_mode: true
+base_url: https://ark.cn-beijing.volces.com/api/v3/images/generations
+auto_save: true
+save_dir: 
+models:
+  v5: doubao-seedream-5-0-260128
+  v45: doubao-seedream-4-5-251128
+  v4: doubao-seedream-4-0-250828
+default:
+  output_format: png
+  watermark: false
+`
+  if (!fs.existsSync(CONFIG_PATH)) await ipcRenderer.invoke('save-file', ('', {CONFIG_FILE, defaultCfg}))
+  return fs.readFileSync(CONFIG_PATH, 'utf8')
+}
+
+function saveConfigYml (content) {
+  ipcRenderer.invoke('save-file', ('', {CONFIG_FILE, content}))
+}
+
+function getReadme() {
+  if (!fs.existsSync(README_PATH)) return '# Seedream 图像生成工具'
+  return fs.readFileSync(README_PATH, 'utf8')
+}
+
+async function writeLog(message, forceWrite = false) {
+  if (!DEV_MODE && !forceWrite) return
+  const now = new Date()
+  const timestamp = now.toISOString().replace('T', ' ').split('.')[0]
+  const logStr = `[${timestamp}] ${message}\n`
+  await ipcRenderer.invoke('save-file', ('', {LOG_FILE, logStr}))
+}
+
+function getLogs() {
+  return fs.existsSync(LOG_PATH) ? fs.readFileSync(LOG_PATH) : ''
+}
+
+async function clearLogs() {
+  const tmp = ''
+  await ipcRenderer.invoke('save-file', ('', {LOG_FILE, tmp})) 
 }
 
 function getSaveImgPrefix() {
@@ -174,24 +228,14 @@ async function generateImage(opts) {
   }
 }
 
-function clearLogs() {
-  try {
-    if (fs.existsSync(LOG_DIR)) {
-      const files = fs.readdirSync(LOG_DIR)
-      files.forEach(f => {
-        if (f.endsWith('.log')) fs.unlinkSync(path.join(LOG_DIR, f))
-      })
-    }
-    return { success: true }
-  } catch (e) {
-    return { error: e.message }
-  }
-}
-
 module.exports = { 
   VERSION,
   AUTHOR_INFO,
   generateImage, 
+  getLogs,
   clearLogs, 
-  writeLog, 
+  writeLog,
+  getConfigYml,
+  saveConfigYml,
+  getReadme,
   getSaveImgPrefix }

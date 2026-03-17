@@ -571,28 +571,28 @@ document.onclick = ()=>{moreMenu.style.display='none'}
 document.getElementById('exitApp').onclick = ()=>ipcRenderer.send('appExit')
 
 document.getElementById('openLog').onclick = async ()=>{
-  document.getElementById('logContent').value = await ipcRenderer.invoke('getLog')
+  document.getElementById('logContent').value = seedream.getLogs()
   show('logModal')
 }
 document.getElementById('closeLogModal').onclick = ()=>hide('logModal')
 document.getElementById('clearLogBtn').onclick = async ()=>{
-  await ipcRenderer.invoke('clearLog')
+  seedream.clearLogs()
   document.getElementById('logContent').value = ''
+  hide('logModal')
 }
 
 document.getElementById('openConfig').onclick = async ()=>{
-  document.getElementById('cfgContent').value = await ipcRenderer.invoke('getConfig')
+  document.getElementById('cfgContent').value = await seedream.getConfigYml()
   show('cfgModal')
 }
 document.getElementById('closeCfgModal').onclick = ()=>hide('cfgModal')
-document.getElementById('saveCfgBtn').onclick = async ()=>{
-  await ipcRenderer.invoke('saveConfig', document.getElementById('cfgContent').value)
+document.getElementById('saveCfgBtn').onclick = ()=>{
+  seedream.saveConfigYml(document.getElementById('cfgContent').value)
   hide('cfgModal')
 }
 
 document.getElementById('openReadme').onclick = async ()=>{
-  const text = await ipcRenderer.invoke('readReadme')
-  document.getElementById('mdRender').innerHTML = renderMarkdown(text)
+  document.getElementById('mdRender').innerHTML = renderMarkdown(seedream.getReadme())
   show('readmeModal')
 }
 document.getElementById('closeReadmeModal').onclick = ()=>hide('readmeModal')

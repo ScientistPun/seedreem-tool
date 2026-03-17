@@ -1,6 +1,7 @@
 const { app, BrowserWindow, ipcMain, dialog, globalShortcut } = require('electron')
-const path = require('path')
+const pkgInfo = require('./package.json')
 const fs = require('fs')
+const path = require('path')
 const yaml = require('js-yaml') // 已修复依赖
 
 let mainWindow
@@ -20,6 +21,24 @@ async function createWindow() {
   mainWindow.setMenuBarVisibility(false)
 }
 
+ipcMain.handle('get-path', () => {
+  return app.isPackaged ? app.getPath('userData'):__dirname
+})
+
+ipcMain.handle('save-file', (e, param) => {
+  const dir = app.isPackaged ? app.getPath('userData'):__dirname
+  console.log(path)
+  const target = path.join(dir, param.filename)
+  try {
+    fs.writeFileSync(target, param.content, 'utf-8')
+    dialog.showMessageBoxSync({ type: 'info', title: pkgInfo.build.productName, message: '✅ 操作成功'})
+    return {success: true}
+  } catch (e) {
+    dialog.showMessageBoxSync({ type: 'warning', title: pkgInfo.build.productName, message: `⚠️ 操作失败：${e.error}`})
+    return {error: e.message}
+  }
+})
+
 app.whenReady().then(() => {
   createWindow()
 
@@ -34,47 +53,6 @@ ipcMain.handle('open-directory', async () => {
   return await dialog.showOpenDialog({
     properties: ['openDirectory']
   })
-})
-
-ipcMain.handle('getLog', () => {
-  const logPath = path.join(__dirname, 'cache.log')
-  return fs.existsSync(logPath) ? fs.readFileSync(logPath, 'utf8') : ''
-})
-
-ipcMain.handle('clearLog', () => {
-  const logPath = path.join(__dirname, 'cache.log')
-  if (fs.existsSync(logPath)) fs.writeFileSync(logPath, '')
-})
-
-ipcMain.handle('getConfig', () => {
-  const cfgPath = path.join(__dirname, 'config.yml')
-  const defaultCfg = `
-api_key: ""
-dev_mode: true
-base_url: https://ark.cn-beijing.volces.com/api/v3/images/generations
-auto_save: true
-save_dir: 
-models:
-  v5: doubao-seedream-5-0-260128
-  v45: doubao-seedream-4-5-251128
-  v4: doubao-seedream-4-0-250828
-default:
-  output_format: png
-  watermark: false
-`
-  if (!fs.existsSync(cfgPath)) fs.writeFileSync(cfgPath, defaultCfg, 'utf8')
-  return fs.readFileSync(cfgPath, 'utf8')
-})
-
-ipcMain.handle('saveConfig', (event, content) => {
-  const cfgPath = path.join(__dirname, 'config.yml')
-  fs.writeFileSync(cfgPath, content, 'utf8')
-})
-
-ipcMain.handle('readReadme', () => {
-  const readmePath = path.join(__dirname, 'README.md')
-  if (!fs.existsSync(readmePath)) return '# Seedream 图像生成工具'
-  return fs.readFileSync(readmePath, 'utf8')
 })
 
 ipcMain.on('appExit', () => {
