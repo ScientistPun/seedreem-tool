@@ -3,236 +3,563 @@
 <head>
   <meta charset="UTF-8">
   <title>Seedream Tools</title>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <style>
-    *{box-sizing:border-box;font-family:-apple-system,BlinkMacSystemFont,sans-serif;margin:0;padding:0}
-    body{background:#f7f8fa;padding:25px;}
-    .layout{display:flex;gap:24px;max-width:1400px;margin:0 auto;}
-    .left{width:65%;display:flex;flex-direction:column;gap:16px;}
-    .right{width:35%;}
-    .card{background:#fff;border-radius:18px;padding:22px;box-shadow:0 2px 10px rgba(0,0,0,0.04);position:relative;}
-    .card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;}
-    .card-header h2{font-size:17px;}
-    .more-btn{font-size:20px;cursor:pointer;padding:0 10px;user-select:none;}
-    .more-menu{position:absolute;top:40px;right:20px;background:#fff;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,0.1);z-index:9999;display:none;overflow:hidden;}
-    .more-menu div{padding:10px 18px;cursor:pointer;font-size:14px;white-space:nowrap;}
-    .more-menu div:hover{background:#f2f2f2;}
-    .result-box{background:#f9fafb;border-radius:12px;padding:16px;min-height:100px;max-height:220px;white-space:pre-wrap;font-size:13px;overflow-y:auto;}
-    .image-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;}
-    .image-item{border-radius:14px;overflow:hidden;background:#f1f1f1;aspect-ratio:1;cursor:pointer;}
-    .image-item img{width:100%;height:100%;object-fit:cover;}
-    .empty{color:#999;padding:20px 0;text-align:center;}
-    .form-line{margin-bottom:16px;}
-    .form-line label{display:block;margin-bottom:8px;font-size:14px;font-weight:600;}
-    input,select,textarea{width:100%;padding:12px 14px;border:1px solid #e4e7ed;border-radius:12px;font-size:14px;outline:none;}
+    *{box-sizing:border-box;font-family:system-ui,sans-serif;margin:0;padding:0}
+    body{background:#f7f9fa;padding:25px}
+    .layout{display:flex;gap:24px;max-width:1600px;margin:0 auto}
+    .left{width:65%}
+    .right{width:35%}
 
-    .btn{width:100%;padding:14px;background:#007aff;color:#fff;border:none;border-radius:14px;font-size:15px;font-weight:600;cursor:pointer;margin-top:8px;display:flex;align-items:center;justify-content:center;gap:6px;}
-    .btn:disabled{background:#999;cursor:not-allowed;}
-    .loading-dots{display:inline-flex;gap:3px;align-items:flex-end;}
-    .loading-dots span{width:3px;height:3px;background:#fff;border-radius:50%;animation:loading 1.2s infinite ease-in-out;}
-    .loading-dots span:nth-child(1){animation-delay:0s;}
-    .loading-dots span:nth-child(2){animation-delay:0.2s;}
-    .loading-dots span:nth-child(3){animation-delay:0.4s;}
-    @keyframes loading{0%,100%{transform:translateY(0);}50%{transform:translateY(-4px);}}
+    .card{
+      background:#fff;border-radius:18px;padding:22px;margin-bottom:20px;
+      box-shadow:0 2px 8px rgba(0,0,0,0.04);position:relative
+    }
+    .card-header{
+      display:flex;justify-content:space-between;align-items:center;margin-bottom:14px
+    }
 
-    .preview-modal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);display:none;justify-content:center;align-items:center;z-index:9999;}
-    .preview-content{position:relative;max-width:90%;max-height:90%;}
-    .preview-content img{max-width:100%;max-height:90vh;border-radius:16px;}
-    .preview-nav{position:absolute;top:50%;transform:translateY(-50%);background:rgba(0,0,0,0.5);color:#fff;width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:20px;}
-    .prev{left:20px;}
-    .next{right:20px;}
+    .mini-btn {
+      background:transparent;
+      color:#007aff;
+      border:none;
+      font-size:13px;
+      cursor:pointer;
+      padding:4px 8px;
+    }
+    .mini-btn:disabled {
+      color:#999;
+      cursor:not-allowed;
+    }
 
-    .model-selector{display:flex;gap:10px;margin-bottom:16px;}
-    .model-btn{flex:1;padding:12px;border:1px solid #e4e7ed;border-radius:12px;text-align:center;cursor:pointer;font-size:14px;transition:all 0.2s;}
-    .model-btn.active{background:#007aff;color:#fff;border-color:#007aff;}
+    .more-btn{font-size:20px;cursor:pointer}
+    .more-menu{
+      position:absolute;top:50px;right:20px;background:#fff;border-radius:12px;
+      box-shadow:0 4px 12px rgba(0,0,0,0.1);z-index:999;display:none
+    }
+    .more-menu div{padding:10px 16px;cursor:pointer}
 
-    .config-modal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);display:none;justify-content:center;align-items:center;z-index:9999;}
-    .config-modal-content{width:95%;max-width:900px;background:#fff;border-radius:20px;padding:28px;max-height:95vh;display:flex;flex-direction:column;}
-    .config-modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;}
-    .config-modal-header h3{font-size:17px;}
-    .config-close{cursor:pointer;font-size:22px;padding:0 8px;user-select:none;}
-    .config-textarea{flex:1;border-radius:12px;border:1px solid #ddd;padding:16px;font-size:14px;outline:none;font-family:Menlo,Monaco,monospace;min-height:500px;}
-    .config-save-btn{margin-top:20px;padding:14px;border-radius:12px;background:#007aff;color:#fff;border:none;font-weight:600;cursor:pointer;}
+    .form-line{margin-bottom:16px}
+    .form-line label{margin-bottom:8px;display:block;font-weight:600}
+    input,select,textarea{
+      width:100%;padding:12px;border:1px solid #e4e7ed;border-radius:12px;font-size:14px
+    }
+
+    .model-selector{
+      display:flex;gap:12px;margin-bottom:20px
+    }
+    .model-btn{
+      flex:1;padding:14px;border:1px solid #e4e7ed;border-radius:12px;
+      text-align:center;cursor:pointer;font-size:14px
+    }
+    .model-btn.active{background:#007aff;color:#fff}
+
+    .btn{
+      width:100%;padding:14px;background:#007aff;color:#fff;border:none;border-radius:14px;
+      font-size:15px;font-weight:600;margin-top:8px;cursor:pointer;display:flex;
+      align-items:center;justify-content:center;gap:8px
+    }
+    .btn:disabled{background:#999;cursor:not-allowed}
+    .loading-spin{display:inline-block;animation:spin 0.8s linear infinite}
+    @keyframes spin{100%{transform:rotate(360deg)}}
+
+    .prompt-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:10px}
+    .prompt-card{
+      background:#f1f5ff;padding:12px;border-radius:12px;cursor:pointer;
+      display:flex;flex-direction:column;gap:4px;position:relative
+    }
+    .prompt-card .del-btn{
+      position:absolute;top:6px;right:6px;background:red;color:white;
+      border:none;border-radius:4px;padding:2px 6px;font-size:12px
+    }
+
+    .result-box{background:#f9f9f9;padding:16px;border-radius:12px;min-height:100px;white-space:pre-wrap}
+    
+    .image-grid{
+      display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));
+      gap:14px;margin-top:16px;
+    }
+    .image-item{
+      border-radius:14px;overflow:hidden;position:relative;cursor:pointer;
+    }
+    .image-item img{
+      width:100%;height:100%;object-fit:cover;display:block
+    }
+    .img-check{
+      position:absolute;top:10px;left:10px;z-index:2;width:18px;height:18px
+    }
+
+    .modal{
+      position:fixed;top:0;left:0;width:100%;height:100%;
+      background:rgba(0,0,0,0.8);display:none;justify-content:center;align-items:center;
+      z-index:9999
+    }
+    .modal-content{
+      background:#fff;border-radius:16px;width:90%;max-width:800px;
+      max-height:85vh;overflow:hidden;display:flex;flex-direction:column
+    }
+    .modal-header{
+      padding:16px 20px;background:#f7f9fa;border-bottom:1px solid #e5e7eb;
+      font-weight:600;font-size:16px;display:flex;justify-content:space-between;align-items:center
+    }
+    .modal-body{
+      padding:20px;overflow-y:auto;flex:1
+    }
+    .modal-footer{
+      padding:12px 20px;border-top:1px solid #e5e7eb;display:flex;justify-content:flex-end;gap:12px
+    }
+    .modal-footer button{
+      padding:8px 16px;border-radius:8px;border:none;cursor:pointer
+    }
+    .btn-primary{background:#007aff;color:white}
+    .btn-default{background:#f2f2f2}
+    .btn-danger{background:#ff3b30;color:white}
+
+    #previewModal{background:rgba(0,0,0,0.9);z-index:99999;}
+    .preview-container{
+      position:relative;
+      max-width:90%;
+      max-height:90vh;
+    }
+    .preview-img{
+      max-width:100%;
+      max-height:90vh;
+      object-fit:contain;
+      display:block;
+    }
+    .preview-nav{
+      position:absolute;top:50%;transform:translateY(-50%);
+      background:rgba(255,255,255,0.2);color:white;border:none;
+      font-size:24px;padding:16px 20px;border-radius:50%;cursor:pointer
+    }
+    #prevBtn{left:-80px}
+    #nextBtn{right:-80px}
+
+    .md-view {
+      line-height: 1.7;
+      color: #222;
+    }
+    .md-view h1 {
+      font-size: 22px;
+      margin: 16px 0 12px;
+      font-weight: 700;
+      border-bottom: 1px solid #eee;
+      padding-bottom: 8px;
+    }
+    .md-view h2 {
+      font-size: 19px;
+      margin: 14px 0 10px;
+      font-weight: 600;
+    }
+    .md-view h3 {
+      font-size: 17px;
+      margin: 12px 0 8px;
+      font-weight: 600;
+    }
+    .md-view p {
+      margin: 10px 0;
+    }
+    .md-view ul,
+    .md-view ol {
+      margin: 10px 0 10px 24px;
+    }
+    .md-view li {
+      margin: 4px 0;
+    }
+    .md-view code {
+      background: #f2f2f2;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: monospace;
+    }
+    .md-view pre {
+      background: #f7f7f7;
+      padding: 12px;
+      border-radius: 8px;
+      overflow-x: auto;
+      margin: 10px 0;
+    }
+    .md-view pre code {
+      background: transparent;
+      padding: 0;
+    }
+    .md-view blockquote {
+      border-left: 4px solid #007aff;
+      padding: 8px 12px;
+      background: #f7f9fa;
+      margin: 10px 0;
+      color: #555;
+    }
+    .md-view a {
+      color: #007aff;
+      text-decoration: none;
+    }
   </style>
 </head>
+
 <body>
 
 <div class="layout">
   <div class="left">
     <div class="card">
-      <div class="card-header"><h2>📄 响应结果</h2></div>
-      <div class="result-box" id="resultText">等待生成...</div>
+      <div class="card-header">
+        <h2>🏷️ 提示词库</h2>
+        <button id="addPromptBtn" class="mini-btn">➕ 添加</button>
+      </div>
+      <div class="prompt-grid" id="promptGrid"></div>
     </div>
+
     <div class="card">
-      <h2>🖼️ 生成结果</h2>
-      <div class="image-grid" id="imageContainer"><div class="empty">暂无图片</div></div>
+      <h2>📄 响应结果</h2>
+      <div class="result-box" id="resultText"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <h2>🖼️ 生成结果</h2>
+        <button id="saveSelectedBtn" class="mini-btn" disabled>💾 保存选中图片</button>
+      </div>
+      <div class="image-grid" id="imageContainer"></div>
     </div>
   </div>
 
-  <div class="right card">
-    <div class="card-header">
-      <h2>🪄 生成表单</h2>
-      <div id="moreBtn" class="more-btn">⋯</div>
-      <div id="moreMenu" class="more-menu">
-        <div onclick="openConfigModal()">⚙️ 配置文件</div>
-        <div onclick="openReadme()">📖 说明文档</div>
-        <div onclick="clearLogs()">🧹 清空日志</div>
-        <div onclick="quitApp()" style="color:#ff3b30;">❌ 退出应用</div>
+  <div class="right">
+    <div class="card">
+      <div class="card-header">
+        <h2>🪄 生成面板</h2>
+        <div class="more-btn" id="moreBtn">⋯</div>
+        <div class="more-menu" id="moreMenu">
+          <div id="openConfig">⚙️ 配置文件</div>
+          <div id="openReadme">📖 说明文档</div>
+          <div id="openLog">📝 查看日志</div>
+          <div id="exitApp">❌ 退出应用</div>
+        </div>
       </div>
-    </div>
 
-    <div class="form-line">
-      <label>模型</label>
       <div class="model-selector">
         <div class="model-btn" data-key="v4">V4</div>
         <div class="model-btn" data-key="v45">V45</div>
         <div class="model-btn active" data-key="v5">V5</div>
       </div>
-      <input type="hidden" id="modelKey" value="v5">
-    </div>
 
-    <div class="form-line"><label>模式</label><select id="mode"><option value="text2img">文生图</option><option value="img2img">图生图</option><option value="img2img_multi">多图融合</option><option value="img2img_group">组图生成</option></select></div>
-    <div class="form-line"><label>尺寸</label><input type="text" id="size" value="1728x2304"></div>
-    <div class="form-line"><label>风格强度</label><input type="text" id="strength" value="0.7"></div>
-    <div class="form-line"><label>参考图URL（空行分隔）</label><textarea id="image_urls" placeholder="一行一个URL，空行自动忽略"></textarea></div>
-    <div class="form-line"><label>提示词</label><textarea id="prompt" required></textarea></div>
-    <button class="btn" id="generateBtn">🚀 开始生成</button>
+      <div class="form-line">
+        <label>生成模式</label>
+        <select id="mode">
+          <option value="text2img">文生图</option>
+          <option value="img2img">图生图</option>
+          <option value="img2img_multi">多图融合</option>
+          <option value="group">组图生成</option>
+        </select>
+      </div>
+
+      <div class="form-line">
+        <label>图片尺寸</label>
+        <input id="size" value="1728x2304">
+      </div>
+
+      <div class="form-line">
+        <label>风格强度</label>
+        <input id="strength" value="0.7">
+      </div>
+
+      <div class="form-line">
+        <label>参考图 URL</label>
+        <textarea id="imageUrls" rows="3"></textarea>
+      </div>
+
+      <div class="form-line">
+        <label>提示词</label>
+        <textarea id="prompt" rows="5"></textarea>
+      </div>
+
+      <button class="btn" id="generateBtn">🚀 开始生成</button>
+    </div>
   </div>
 </div>
 
-<!-- 预览 -->
-<div class="preview-modal" id="previewModal">
-  <div class="preview-content">
-    <div class="preview-nav prev">&lt;</div>
-    <img id="previewImg">
-    <div class="preview-nav next">&gt;</div>
+<!-- 图片预览弹窗 -->
+<div class="modal" id="previewModal">
+  <div class="preview-container">
+    <button id="prevBtn" class="preview-nav">←</button>
+    <img id="previewImg" class="preview-img">
+    <button id="nextBtn" class="preview-nav">→</button>
+  </div>
+</div>
+
+<!-- 提示词弹窗 -->
+<div class="modal" id="promptModal">
+  <div class="modal-content">
+    <div class="modal-header">添加提示词</div>
+    <div class="modal-body">
+      <input style="margin-bottom:10px" id="modalTitle" placeholder="标题">
+      <input style="margin-bottom:10px" id="modalDesc" placeholder="描述">
+      <textarea style="min-height:80px" id="modalContent" placeholder="提示词内容"></textarea>
+    </div>
+    <div class="modal-footer">
+      <button id="cancelModalBtn" class="btn-default">取消</button>
+      <button id="savePromptModalBtn" class="btn-primary">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- 日志弹窗 -->
+<div class="modal" id="logModal">
+  <div class="modal-content">
+    <div class="modal-header">日志</div>
+    <div class="modal-body">
+      <textarea style="width:100%;min-height:300px" id="logContent" readonly></textarea>
+    </div>
+    <div class="modal-footer">
+      <button id="clearLogBtn" class="btn-danger">清空日志</button>
+      <button id="closeLogModal" class="btn-default">关闭</button>
+    </div>
   </div>
 </div>
 
 <!-- 配置弹窗 -->
-<div class="config-modal" id="configModal">
-  <div class="config-modal-content">
-    <div class="config-modal-header">
-      <h3>⚙️ 编辑 config.yml</h3>
-      <div class="config-close">×</div>
+<div class="modal" id="cfgModal">
+  <div class="modal-content">
+    <div class="modal-header">配置文件</div>
+    <div class="modal-body">
+      <textarea style="width:100%;min-height:300px" id="cfgContent"></textarea>
     </div>
-    <textarea class="config-textarea" id="configTextarea"></textarea>
-    <button class="config-save-btn">保存配置</button>
+    <div class="modal-footer">
+      <button id="saveCfgBtn" class="btn-primary">保存</button>
+      <button id="closeCfgModal" class="btn-default">关闭</button>
+    </div>
   </div>
 </div>
 
 <!-- 说明文档弹窗 -->
-<div class="config-modal" id="readmeModal">
-  <div class="config-modal-content">
-    <div class="config-modal-header">
-      <h3>📖 使用说明</h3>
-      <div class="config-close">×</div>
+<div class="modal" id="readmeModal">
+  <div class="modal-content">
+    <div class="modal-header">说明文档</div>
+    <div class="modal-body">
+      <div id="mdRender" class="md-view"></div>
     </div>
-    <div class="config-textarea" style="white-space:pre-line;overflow-y:auto;font-size:14px;">
-【Seedream Tools 使用说明】
-1. 填写 api_key 在右上角「配置文件」中填写你的 API Key。
-2. 模型选择 V4 / V45 / V5 点击切换。
-3. 模式说明：文生图、图生图、多图融合、组图生成。
-4. 参考图URL 一行一个，空行会自动忽略。
-5. 生成结果自动保存到桌面。
-6. 修改配置后关闭重新打开即可生效。
+    <div class="modal-footer">
+      <button id="closeReadmeModal" class="btn-default">关闭</button>
     </div>
   </div>
 </div>
 
 <script>
-let currentIndex = 0
-let imageList = []
-const moreBtn = document.getElementById('moreBtn')
-const moreMenu = document.getElementById('moreMenu')
-const resultText = document.getElementById('resultText')
+const { ipcRenderer } = require('electron')
+const seedream = require('./seedream.js')
+const fs = require('fs')
+const path = require('path')
+
+let currentImageList = []
+let currentPreviewIndex = 0
+
+function renderMarkdown(text) {
+  if (!text) return ""
+  return marked.parse(text, { breaks: true, gfm: true })
+}
+
+function show(id){document.getElementById(id).style.display='flex'}
+function hide(id){document.getElementById(id).style.display='none'}
+
+// 监听复选框，控制保存按钮状态
+function updateSaveButtonStatus() {
+  const btn = document.getElementById('saveSelectedBtn')
+  const checked = document.querySelectorAll('.img-check:checked')
+  btn.disabled = checked.length === 0
+}
+
+// ======================
+// 生成图片
+// ======================
 const generateBtn = document.getElementById('generateBtn')
-const configModal = document.getElementById('configModal')
-const readmeModal = document.getElementById('readmeModal')
-const previewModal = document.getElementById('previewModal')
-const ipcRenderer = window?.ipcRenderer || require('electron')?.ipcRenderer
+const resultBox = document.getElementById('resultText')
+const imageContainer = document.getElementById('imageContainer')
 
-// 菜单点击（修复完成）
-moreBtn.onclick = (e) => {
-  e.stopPropagation()
-  moreMenu.style.display = moreMenu.style.display === 'block' ? 'none' : 'block'
-}
-document.addEventListener('click', () => {
-  moreMenu.style.display = 'none'
-})
-
-// 模型选择
-document.querySelectorAll('.model-btn').forEach(b => {
-  b.onclick = () => {
-    document.querySelectorAll('.model-btn').forEach(x => x.classList.remove('active'))
-    b.classList.add('active')
-    document.getElementById('modelKey').value = b.dataset.key
-  }
-})
-
-// 配置文件
-async function openConfigModal() {
-  configModal.style.display = 'flex'
-  try {
-    const content = await ipcRenderer.invoke('get-config')
-    document.getElementById('configTextarea').value = content
-  } catch (e) {
-    document.getElementById('configTextarea').value = `api_key: ""\nsave_dir: "~/Desktop/seedream_output"`
-  }
-}
-function closeConfigModal() { configModal.style.display = 'none' }
-document.querySelector('.config-close').onclick = closeConfigModal
-
-async function saveConfig() {
-  const content = document.getElementById('configTextarea').value
-  const ok = await ipcRenderer.invoke('save-config', content)
-  alert(ok ? '✅ 保存成功' : '❌ 保存失败')
-  closeConfigModal()
-}
-document.querySelector('.config-save-btn').onclick = saveConfig
-
-// 说明文档
-function openReadme() { readmeModal.style.display = 'flex' }
-function closeReadme() { readmeModal.style.display = 'none' }
-document.querySelectorAll('.config-close')[1].onclick = closeReadme
-
-// 退出
-function quitApp() {
-  if (!confirm('确定退出？')) return
-  ipcRenderer.send('quit-app')
-}
-
-// 清空日志
-function clearLogs() {
-  alert('🧹 清空日志功能已就绪')
-}
-
-// 图片预览
-function showPreview() {
-  previewImg.src = `data:image/png;base64,${imageList[currentIndex]}`
-  previewModal.style.display = 'flex'
-}
-document.querySelector('.prev').onclick = () => {
-  currentIndex = (currentIndex - 1 + imageList.length) % imageList.length
-  showPreview()
-}
-document.querySelector('.next').onclick = () => {
-  currentIndex = (currentIndex + 1) % imageList.length
-  showPreview()
-}
-previewModal.onclick = (e) => {
-  if (e.target === previewModal) previewModal.style.display = 'none'
-}
-
-// 生成按钮
 generateBtn.onclick = async () => {
+  if(generateBtn.disabled) return
   generateBtn.disabled = true
-  generateBtn.innerHTML = `⏳ 生成中 <span class="loading-dots"><span></span><span></span><span></span></span>`
-  resultText.textContent = "✅ 界面正常，配置可保存，退出正常"
-  setTimeout(() => {
-    generateBtn.disabled = false
-    generateBtn.textContent = '🚀 开始生成'
-  }, 1500)
+  generateBtn.innerHTML = '<span class="loading-spin">⏳</span> 生成中...'
+  resultBox.innerText = ''
+  imageContainer.innerHTML = ''
+  currentImageList = []
+  document.getElementById('saveSelectedBtn').disabled = true
+
+  try {
+    const res = await seedream.generateImage({
+      modelKey: document.querySelector('.model-btn.active').dataset.key,
+      mode: document.getElementById('mode').value,
+      prompt: document.getElementById('prompt').value,
+      size: document.getElementById('size').value,
+      strength: parseFloat(document.getElementById('strength').value),
+      imageUrls: document.getElementById('imageUrls').value.trim().split('\n').filter(i=>i),
+      autoSave: false
+    })
+
+    if (!res.success) throw new Error('生成失败')
+    currentImageList = res.base64List
+    resultBox.innerText = `✅ 成功生成 ${res.base64List.length} 张图片`
+
+    res.base64List.forEach((b64, idx) => {
+      const item = document.createElement('div')
+      item.className = 'image-item'
+      item.innerHTML = `
+        <input type="checkbox" class="img-check" data-idx="${idx}" onchange="updateSaveButtonStatus()">
+        <img src="data:image/png;base64,${b64}" data-idx="${idx}">
+      `
+      item.querySelector('img').onclick = () => openPreview(idx)
+      imageContainer.appendChild(item)
+    })
+
+    generateBtn.innerHTML = '✅ 生成成功'
+  } catch (e) {
+    resultBox.innerText = '❌ 错误：' + e.message
+  }
+  generateBtn.disabled = false
 }
+
+// ======================
+// 图片预览（已修复遮罩点击）
+// ======================
+function openPreview(idx){
+  currentPreviewIndex = idx
+  document.getElementById('previewImg').src = `data:image/png;base64,${currentImageList[idx]}`
+  show('previewModal')
+}
+
+// ✅ 关闭预览（点击遮罩 + 按钮 + ESC 全部生效）
+document.getElementById('previewModal').addEventListener('click', (e) => {
+  if (e.target === document.getElementById('previewModal')) {
+    hide('previewModal')
+  }
+})
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') hide('previewModal')
+})
+
+// 上下张
+document.getElementById('prevBtn').onclick = ()=>{
+  currentPreviewIndex = (currentPreviewIndex - 1 + currentImageList.length) % currentImageList.length
+  document.getElementById('previewImg').src = `data:image/png;base64,${currentImageList[currentPreviewIndex]}`
+}
+document.getElementById('nextBtn').onclick = ()=>{
+  currentPreviewIndex = (currentPreviewIndex + 1) % currentImageList.length
+  document.getElementById('previewImg').src = `data:image/png;base64,${currentImageList[currentPreviewIndex]}`
+}
+
+// ======================
+// 保存选中图片
+// ======================
+document.getElementById('saveSelectedBtn').onclick = async () => {
+  try {
+    const result = await ipcRenderer.invoke('open-directory')
+    if (result.canceled || !result.filePaths) return
+
+    const dir = result.filePaths[0]
+    const checks = document.querySelectorAll('.img-check:checked')
+    let count = 0
+
+    const imgPrefix = seedream.getSaveImgPrefix()
+
+    checks.forEach(c => {
+      try {
+        const idx = c.dataset.idx
+        const b64 = currentImageList[idx]
+        const buffer = Buffer.from(b64, 'base64')
+        const file = path.join(dir, `${imgPrefix}${idx}.png`)
+        fs.writeFileSync(file, buffer)
+        count++
+      } catch (e) {}
+    })
+    alert(`✅ 保存成功！共 ${count} 张\n路径：${dir}`)
+  } catch (err) {
+    alert('❌ 保存失败：' + err.message)
+  }
+}
+
+// ======================
+// 提示词库
+// ======================
+function renderPromptList() {
+  const g = document.getElementById('promptGrid')
+  g.innerHTML = ''
+  const list = JSON.parse(localStorage.getItem('prompts')||'[]')
+  list.forEach((it,i)=>{
+    const d = document.createElement('div')
+    d.className = 'prompt-card'
+    d.innerHTML = `
+      <div>${it.title}</div>
+      <div style="font-size:12px;color:#666">${it.desc}</div>
+      <button class="del-btn" data-i="${i}">删除</button>
+    `
+    d.onclick = ()=>{ document.getElementById('prompt').value = it.content }
+    g.appendChild(d)
+  })
+  document.querySelectorAll('.del-btn').forEach(b=>{
+    b.onclick = (e)=>{
+      e.stopPropagation()
+      const list = JSON.parse(localStorage.getItem('prompts')||'[]')
+      list.splice(b.dataset.i,1)
+      localStorage.setItem('prompts',JSON.stringify(list))
+      renderPromptList()
+    }
+  })
+}
+
+document.getElementById('addPromptBtn').onclick = ()=>show('promptModal')
+document.getElementById('cancelModalBtn').onclick = ()=>hide('promptModal')
+document.getElementById('savePromptModalBtn').onclick = () => {
+  const t = document.getElementById('modalTitle').value.trim()
+  const d = document.getElementById('modalDesc').value.trim()
+  const c = document.getElementById('modalContent').value.trim()
+  if(!t||!c)return
+  const list = JSON.parse(localStorage.getItem('prompts')||'[]')
+  list.push({title:t,desc:d,content:c})
+  localStorage.setItem('prompts',JSON.stringify(list))
+  hide('promptModal')
+  renderPromptList()
+}
+
+// ======================
+// 菜单功能
+// ======================
+document.getElementById('moreBtn').onclick = (e)=>{e.stopPropagation();moreMenu.style.display=moreMenu.style.display=='block'?'none':'block'}
+document.onclick = ()=>{moreMenu.style.display='none'}
+document.getElementById('exitApp').onclick = ()=>ipcRenderer.send('appExit')
+
+document.getElementById('openLog').onclick = async ()=>{
+  document.getElementById('logContent').value = await ipcRenderer.invoke('getLog')
+  show('logModal')
+}
+document.getElementById('closeLogModal').onclick = ()=>hide('logModal')
+document.getElementById('clearLogBtn').onclick = async ()=>{
+  await ipcRenderer.invoke('clearLog')
+  document.getElementById('logContent').value = ''
+}
+
+document.getElementById('openConfig').onclick = async ()=>{
+  document.getElementById('cfgContent').value = await ipcRenderer.invoke('getConfig')
+  show('cfgModal')
+}
+document.getElementById('closeCfgModal').onclick = ()=>hide('cfgModal')
+document.getElementById('saveCfgBtn').onclick = async ()=>{
+  await ipcRenderer.invoke('saveConfig', document.getElementById('cfgContent').value)
+  hide('cfgModal')
+}
+
+document.getElementById('openReadme').onclick = async ()=>{
+  const text = await ipcRenderer.invoke('readReadme')
+  document.getElementById('mdRender').innerHTML = renderMarkdown(text)
+  show('readmeModal')
+}
+document.getElementById('closeReadmeModal').onclick = ()=>hide('readmeModal')
+
+document.querySelectorAll('.model-btn').forEach(b=>{
+  b.onclick = ()=>{
+    document.querySelectorAll('.model-btn').forEach(x=>x.classList.remove('active'))
+    b.classList.add('active')
+  }
+})
+
+renderPromptList()
 </script>
 </body>
 </html>

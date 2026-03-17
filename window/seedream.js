@@ -13,7 +13,6 @@ let cfg = loadConfig()
 let API_KEY = cfg.api_key
 let DEV_MODE = cfg.dev_mode
 let BASE_URL = cfg.base_url
-let LOG_DIR = cfg.log_dir
 let AUTO_SAVE = cfg.auto_save
 let SAVE_DIR = cfg.save_dir
 
@@ -32,41 +31,46 @@ function reloadConfig() {
     API_KEY = cfg.api_key
     DEV_MODE = cfg.dev_mode
     BASE_URL = cfg.base_url
-    LOG_DIR = cfg.log_dir
     AUTO_SAVE = cfg.auto_save
     SAVE_DIR = cfg.save_dir
   } catch (e) {}
 }
 
-function getDailyLogName() {
-  const date = new Date()
-  const year = date.getFullYear()
-  const month = String(date.getMonth() + 1).padStart(2, '0')
-  const day = String(date.getDate()).padStart(2, '0')
-  return `${year}${month}${day}.log`
-}
-
 function writeLog(message, forceWrite = false) {
   try {
     if (!DEV_MODE && !forceWrite) return
-    if (!fs.existsSync(LOG_DIR)) fs.mkdirSync(LOG_DIR, { recursive: true })
-    const logFile = path.join(LOG_DIR, getDailyLogName())
+    const logFile = require('path').join(process.cwd(), 'cache.log');
     const now = new Date()
     const timestamp = now.toISOString().replace('T', ' ').split('.')[0]
     const logStr = `[${timestamp}] ${message}\n`
     fs.appendFileSync(logFile, logStr, 'utf8')
-  } catch (e) {}
+  } catch (e) {
+    if (DEV_MODE) console.log('无法写入:', e.message)
+  }
 }
 
-function saveImage(b64, customOutputDir) {
+function getSaveImgPrefix() {
+    // 生成时间格式：YYMMDDHis
+    const now = new Date()
+    const year = now.getFullYear().toString().slice(2)
+    const month = (now.getMonth() + 1).toString().padStart(2, '0')
+    const day = now.getDate().toString().padStart(2, '0')
+    const hour = now.getHours().toString().padStart(2, '0')
+    const min = now.getMinutes().toString().padStart(2, '0')
+    const sec = now.getSeconds().toString().padStart(2, '0')
+    const timeStr = `${year}${month}${day}${hour}${min}${sec}`
+
+    return `seedream_${timeStr}_`;
+}
+
+function saveImage(b64, customOutputDir, imgName) {
   try {
     if (!AUTO_SAVE) return null
     if (!b64) return null
     const outputDir = customOutputDir ? customOutputDir.replace(/^~/, process.env.HOME) : SAVE_DIR.replace(/^~/, process.env.HOME)
     if (!fs.existsSync(outputDir)) fs.mkdirSync(outputDir, { recursive: true })
     const ext = DEFAULT.output_format || 'png'
-    const ts = Date.now()
-    const name = `seedream_${ts}.${ext}`
+    const name = `${imgName}.${ext}`
     const file = path.join(outputDir, name)
     const buffer = Buffer.from(b64, 'base64')
     fs.writeFileSync(file, buffer)
@@ -99,13 +103,14 @@ async function parseSSE(response, customOutputDir) {
     }
   } catch (e) {}
 
-  const savedPaths = dataList.map(it => saveImage(it.b64_json, customOutputDir)).filter(Boolean)
+  const imgPrefix = getSaveImgPrefix()
+  const savedPaths = dataList.map((it, idx) => saveImage(it.b64_json, customOutputDir, `${imgPrefix}${idx}`)).filter(Boolean)
   return { dataList, usage, savedPaths }
 }
 
 async function generateImage(opts) {
   reloadConfig()
-  const { modelKey, mode, prompt, imageUrls = [], size = DEFAULT.size, strength = 0.7, outputDir } = opts
+  const { modelKey, mode, prompt, imageUrls = [], size, strength = 0.7, outputDir } = opts
 
   const model = MODELS[modelKey]
   if (!model) return { error: '不支持的模型' }
@@ -144,6 +149,10 @@ async function generateImage(opts) {
 
     const { dataList, usage, savedPaths } = await parseSSE({ data: res.data }, outputDir)
     const base64List = dataList.map(i => i.b64_json).filter(Boolean)
+
+    writeLog('🖼️ 图片 | ' + JSON.stringify(base64List), DEV_MODE)
+    if (DEV_MODE) console.log('返回图片结果', base64List)
+
     writeLog(`✅ 完成 | 生成=${base64List.length}张 | 保存=${savedPaths.length}张 | usage=${JSON.stringify(usage)}`, true)
     return { success: true, base64List, savedPaths, usage }
   } catch (e) {
@@ -167,4 +176,4 @@ function clearLogs() {
   }
 }
 
-module.exports = { generateImage, clearLogs }
+module.exports = { generateImage, clearLogs, writeLog, getSaveImgPrefix }
