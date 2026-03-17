@@ -14,10 +14,6 @@
   "build": {
     "appId": "com.seedream.tools",
     "productName": "Seedream Tools",
-    "publish": {
-      "provider": "github",
-      "releaseType": "release"
-    },
     "win": {
       "icon": "logo.ico",
       "target": "nsis"
