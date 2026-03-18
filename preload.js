@@ -9,6 +9,14 @@ const { contextBridge, ipcRenderer } = require('electron')
 /**
  * 渲染进程可调用的 API 列表
  * 所有函数都返回 Promise，通过 IPC 与主进程通信
+ * 
+ * IPC 处理器分组：                                                                                                                                                                            
+  - 应用信息（get-app-info, check-update）
+  - 配置管理（load-config, get-config-yml, save-config-yml, save-config-obj）                                                                                                                 
+  - 文档和日志（get-readme, get-logs, write-log, clear-logs）                
+  - 提词库（load-prompts, migrate-prompts-from-localStorage, save-prompts）                                                                                                                   
+  - 图片生成（generate-image, save-image）                                                                                                                                                    
+  - 系统交互（open-directory, show-input-box, copy-to-clipboard, open-external, appExit）
  */
 const api = {
   // 应用信息

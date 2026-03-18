@@ -844,6 +844,7 @@ const showInputDialog = (title, defaultValue, placeholder) => {
     const cleanup = () => {
       confirmBtn.onclick = null
       cancelBtn.onclick = null
+      input.onkeydown = null
     }
 
     confirmBtn.onclick = () => {
@@ -912,7 +913,7 @@ document.getElementById('saveSelectedBtn').onclick = async () => {
 
     showToast(`✅ 保存成功！共 ${count} 张`)
   } catch (err) {
-    alert('❌ 保存失败：' + err.message)
+    showToast('❌ 保存失败：' + err.message)
   }
 }
 
