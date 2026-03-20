@@ -695,14 +695,26 @@ ipcMain.handle('open-external', async (e, url) => {
 })
 
 // 下载更新文件
-ipcMain.handle('download-update', async (_, { url, filename }) => {
+ipcMain.handle('download-update', async (e, { url, filename }) => {
   try {
+    // 弹出目录选择对话框
+    const win = BrowserWindow.fromWebContents(e.sender)
+    const { canceled, filePaths } = await dialog.showOpenDialog(win, {
+      properties: ['openDirectory'],
+      title: '选择更新文件保存目录'
+    })
+    if (canceled || !filePaths?.length) {
+      return { canceled: true }
+    }
+
+    const saveDir = filePaths[0]
+    const savePath = path.join(saveDir, filename)
+
     const res = await axios.get(url, { responseType: 'arraybuffer', timeout: 300000 })
-    const downloadPath = path.join(app.getPath('temp'), filename)
-    fs.writeFileSync(downloadPath, res.data)
-    // 自动打开安装包（macOS 直接挂载 dmg，Windows 打开 exe）
-    await shell.openPath(downloadPath)
-    return { success: true, path: downloadPath }
+    fs.writeFileSync(savePath, res.data)
+    // 自动打开安装包
+    shell.openPath(savePath)
+    return { success: true, path: savePath }
   } catch (err) {
     return { error: err.message }
   }
